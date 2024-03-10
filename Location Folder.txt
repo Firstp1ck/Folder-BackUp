@@ -1,0 +1,14 @@
+Home
+source_folder = r"D:\Benutzer\Geschäft\OneDrive - KUALA LUMPUR KEPONG BERHAD"
+backup_folder = r"D:\Benutzer\Firstpick\firmen_ordner_back_up"
+history_folder = r"D:\Benutzer\Firstpick/firmen_history-ordner"
+
+Firma
+source_folder = r"C:\Users\hdlea\OneDrive - KUALA LUMPUR KEPONG BERHAD\Dokumente"
+backup_folder = r"I:\qkl\lea_Alain Leuzinger\Dokumente"
+history_folder = r"I:\qkl\lea_Alain Leuzinger\firmen_history-ordner"
+
+_02 Home:
+D:\Benutzer\Firstpick\Firmen History
+D:\Benutzer\Firstpick\Firmen BackUp
+D:\Benutzer\Geschäft\OneDrive - KUALA LUMPUR KEPONG BERHAD

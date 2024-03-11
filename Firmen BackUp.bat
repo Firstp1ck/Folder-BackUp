@@ -1,3 +1,3 @@
 @echo off
-python "D:\Benutzer\Firstpick\Python\Firmen Backup\backup_firmenordner.py"
+python "D:\Benutzer\Firstpick\Python\Projekte\Firmen-BackUp\backup_firmenordner.py"
 pause

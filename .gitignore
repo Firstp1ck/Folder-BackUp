@@ -104,7 +104,7 @@ celerybeat.pid
 .env.production.local
 venv/
 ENV/
-env/
+BackUp_Env/
 env.bak/
 venv.bak/
 

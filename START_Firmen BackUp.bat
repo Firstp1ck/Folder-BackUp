@@ -1,3 +1,3 @@
 @echo off
-python backup_firmenordner.py
+python app.py
 pause

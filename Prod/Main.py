@@ -2,16 +2,19 @@ import tkinter as tk
 from tkinter import filedialog
 import os
 import shutil
+import threading
 from pathlib import Path
 import time
 import logging
+from typing import Union
 
 # Configure logging
 logging.basicConfig(filename='backup_log.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Utility functions
-def ensure_directory(path: Path):
+def ensure_directory(path: Union[Path, str]):
     """Ensures that the directory exists."""
+    path = Path(path)
     path.mkdir(parents=True, exist_ok=True)
 
 def copy_file_with_history(src_file: Path, dst_file: Path, hist_file: Path):
@@ -70,9 +73,22 @@ def start_backup():
     source_folder = source_path_var.get()
     backup_folder = backup_path_var.get()
     history_folder = history_path_var.get()
+
+    # Validate the input paths
+    if not source_folder or not Path(source_folder).is_dir():
+        logging.error("Invalid source folder.")
+        return
+    if not backup_folder or not Path(backup_folder).is_dir():
+        logging.error("Invalid backup folder.")
+        return
+    if not history_folder or not Path(history_folder).is_dir():
+        logging.error("Invalid history folder.")
+        return
+
     try:
-        incremental_backup_with_history_and_retry(source_folder, backup_folder, history_folder)
-        logging.info("Backup completed successfully.")
+        # Use threading for the backup process
+        threading.Thread(target=incremental_backup_with_history_and_retry, args=(source_folder, backup_folder, history_folder)).start()
+        logging.info("Backup process initiated.")
     except Exception as e:
         logging.error(f"Backup failed: {e}")
 

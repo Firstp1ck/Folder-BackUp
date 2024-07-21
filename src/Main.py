@@ -50,24 +50,31 @@ def save_config():
         config.write(configfile)
 
 # Utility functions
-def ensure_directory(path: Union[Path, str]):
-    """Ensures that the directory exists."""
-    path = Path(path)
-    path.mkdir(parents=True, exist_ok=True)
+def copy_file_with_history(src_file: Path, dst_file: Path, hist_file: Path, retries=5, delay=1):
+    """Handles the file copying with version history, with retries for locked files."""
+    try_count = 0
+    while try_count < retries:
+        try:
+            if dst_file.exists() and src_file.stat().st_mtime > dst_file.stat().st_mtime:
+                shutil.move(dst_file, hist_file)
+                logger.info(f"Moved updated file to history: {hist_file}")
 
-def copy_file_with_history(src_file: Path, dst_file: Path, hist_file: Path):
-    """Handles the file copying with version history."""
-    try:
-        if dst_file.exists() and src_file.stat().st_mtime > dst_file.stat().st_mtime:
-            shutil.move(dst_file, hist_file)
-            logger.info(f"Moved updated file to history: {hist_file}")
+            if not dst_file.exists() or src_file.stat().st_mtime > dst_file.stat().st_mtime:
+                shutil.copy2(src_file, dst_file)
+                logger.info(f"Copied file to backup: {dst_file}")
 
-        if not dst_file.exists() or src_file.stat().st_mtime > dst_file.stat().st_mtime:
-            shutil.copy2(src_file, dst_file)
-            logger.info(f"Copied file to backup: {dst_file}")
-    except PermissionError as e:
-        logger.error(f"Permission denied for {src_file}: {e}")
-        raise
+            # Exit the loop if copying is successful
+            break
+
+        except PermissionError as e:
+            logger.error(f"Permission denied for {src_file}: {e}")
+            if try_count < retries - 1:
+                logger.warning(f"Retrying for {src_file} in {delay} seconds...")
+                time.sleep(delay)  # Wait before retrying
+                try_count += 1
+            else:
+                logger.error(f"Failed to copy {src_file} after {retries} attempts due to permission error: {e}")
+                break
 
 def incremental_backup_with_history_and_retry(source_folder: str, backup_folder: str, history_folder: str):
     """Performs incremental backup of files with retry logic."""
@@ -91,13 +98,13 @@ def incremental_backup_with_history_and_retry(source_folder: str, backup_folder:
 
             try:
                 copy_file_with_history(src_file, dst_file, hist_file)
-            except PermissionError:
-                logger.warning(f"Retry for {src_file} after permission error.")
-                time.sleep(5)  # Wait for 5 seconds and retry
-                try:
-                    copy_file_with_history(src_file, dst_file, hist_file)
-                except PermissionError as e:
-                    logger.error(f"Failed second attempt for {src_file}: {e}")
+            except Exception as e:
+                logger.error(f"Unexpected error for {src_file}: {e}")
+
+def ensure_directory(path: Union[Path, str]):
+    """Ensures that the directory exists."""
+    path = Path(path)
+    path.mkdir(parents=True, exist_ok=True)
 
 def backup_thread(source_folder: str, backup_folder: str, history_folder: str):
     """Run the backup process in a separate thread, for UI responsiveness."""
